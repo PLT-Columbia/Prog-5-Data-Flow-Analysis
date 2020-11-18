@@ -197,7 +197,6 @@ struct Liveness : public FunctionPass {
      * going.
      */
     while (possibleToUpdate) {
-      possibleToUpdate = false;
       iterationCount++;
       writer.updateIteration();
       /* TODO: Add the code for solving data flow equation.
@@ -210,6 +209,8 @@ struct Liveness : public FunctionPass {
        * Carefully consider the structure of `PHI_USE`, and `PHI_IN` maps.
        * We will provide NO further hint about how to process the PHINode.
        * Please read through the documentation. */
+
+      possibleToUpdate = false;
     }
     /* Please do not modify the following lines. */
     writer.printLiveIns(IN);
