@@ -10,8 +10,8 @@ Instructor: Prof. Baishakhi Ray
 
 ## Logistics
 * **Announcement Date:** Wednesday, November 18, 2020
-* **Due Date:** **(TBD)**Wednesday, December 2, 2020 by 11:59 PM. **No extensions!**
-* **Total Points:** **(TBD)**100
+* **Due Date:** Wednesday, December 2, 2020 by 11:59 PM. **No extensions!**
+* **Total Points:** 100
 
 ## Grading Breakdown
 * Task 1 - Generating Data Flow Graph - 40
@@ -135,8 +135,15 @@ In line 7, while both `%div`, and `%e` seems to be used, only on of them are act
 (when the predecessor is `entry` BasicBlock), `%e` is used. 
 Thus, we extracted all the uses corresponding to the `PHINode` in a special data structure `PHI_USE`. Look closely at the
 data structure, and use it carefully in your code. You may find the following links are useful resources for `PHINode`.
-    a. [http://mayuyu.io/2018/06/04/PhiNode-in-LLVM/](http://mayuyu.io/2018/06/04/PhiNode-in-LLVM/)
-    b. [https://llvm.org/doxygen/classllvm_1_1PHINode.html](https://llvm.org/doxygen/classllvm_1_1PHINode.html)
+
+ 1. [http://mayuyu.io/2018/06/04/PhiNode-in-LLVM/](http://mayuyu.io/2018/06/04/PhiNode-in-LLVM/)
+ 2. [https://llvm.org/doxygen/classllvm_1_1PHINode.html](https://llvm.org/doxygen/classllvm_1_1PHINode.html)
 
 ## Submission
-Only one file should be submitted: `src/Liveness.cpp`. Other files will be ignored when grading.
+Only one file should be submitted: `src/Liveness.cpp`. Other files will be ignored when grading.  Please make sure that your code is properly committed and pushed to the `main` branch.
+
+## Piazza
+If you have any questions about this programming assignment, please post them in the Piazza forum for the course, and an instructor will reply to them as soon as possible. Any updates to the assignment itself will be available in Piazza.
+
+## Disclaimer
+This assignment belongs to Columbia University. It may be freely used for educational purposes.
