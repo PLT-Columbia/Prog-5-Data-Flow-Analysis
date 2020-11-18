@@ -190,11 +190,8 @@ struct Liveness : public FunctionPass {
     /*
      * Initially, we assume that dataflow update is possible.
      * We control the update loop using the variable `possibleToUpdate`.
-     * If you find that no further update is possible,
-     * At the beginning of the loop, we set `possibleToUpdate = false`.
-     * Inside the dataflow analysis, if you find that update is still possible
-     * Set the variable `possibleToUpdate = true` to keep the data flow loop
-     * going.
+     * Inside the dataflow analysis, when you want to terminate the updating 
+     * The IN and OUT sets, `possibleToUpdate = false`.
      */
     while (possibleToUpdate) {
       iterationCount++;
