@@ -67,18 +67,19 @@ struct Liveness : public FunctionPass {
   }
 
   /**
-   * This function populates the initial values of different data flows ingredients.
-   * For every instruction, if it defines anything, `def` will contain that Value
-   * `use` will contain all the values that are used in an instruction.
-   * Initially, both `in` and `out` are populated with empty set.
+   * This function populates the initial values of different data flows
+   * ingredients. For every instruction, if it defines anything, `def` will
+   * contain that Value `use` will contain all the values that are used in an
+   * instruction. Initially, both `in` and `out` are populated with empty set.
    * `phiUse` and `phiIn` are two special cases.
    * Not all the values are used (and thus `in`) for a `PHINode`.
    * `PHINode` only uses the values from the basicblock it is coming from.
    * Thus, for every instruction, `phiUse`, and `phiIN` contains a map
    * From the incoming `BasicBlock*` to the incoming `Value *` set.
    * Note that, all the parameters are pointers in this function.
-   * Thus the changes we are making in this function (i.e. we are populating the values)
-   * Will be reflected to the original maps from where it is being ccalled.
+   * Thus the changes we are making in this function (i.e. we are populating the
+   * values) Will be reflected to the original maps from where it is being
+   * ccalled.
    */
   void populateInitialValues(
       vector<Instruction *> &allInstructions,
@@ -134,6 +135,24 @@ struct Liveness : public FunctionPass {
     }
   }
 
+  /*
+   * The following function is for generating the data flow graph.
+   * When you find a data flow edge from an
+   * Instruction *FROM to a Instruction *TO
+   * That flows the Value *VALUE, call
+   * writer.printDataFlowEdge(FROM, TO, VALUE);
+   * To print out the edge.
+   */
+  void
+  generateDataFlowGraph(vector<Instruction *> allInstructions,
+                        map<Instruction *, set<Value *>> DEF,
+                        map<Instruction *, set<Value *>> USE,
+                        map<PHINode *, map<BasicBlock *, set<Value *>>> PHI_USE,
+                        DataFlowWriter &writer) {
+
+
+  }
+
   bool runOnFunction(Function &F) override {
     DataFlowWriter writer(F);
     vector<Instruction *> allInstructions = writer.getAllInstructions();
@@ -149,17 +168,24 @@ struct Liveness : public FunctionPass {
     map<Instruction *, set<Value *>> IN;
     map<Instruction *, set<Value *>> OUT;
     map<PHINode *, map<BasicBlock *, set<Value *>>> PHI_IN;
-    populateInitialValues(allInstructions, DEF, USE, IN, OUT, PHI_USE, PHI_IN);
+    populateInitialValues(
+        allInstructions, DEF, USE, IN, OUT, PHI_USE, PHI_IN);
 
-    /* These two printers show the DEFs and USEs of every instruction. */
-    writer.printDefs(DEF);
-    writer.printUses(USE);
+    /* These two printers show the DEFs and USEs of every instruction.
+     * You can use these two function to see the values of DEF and USE.
+     * If you do, make sure to comment out these 2 lines before submission.*/
+    // writer.printDefs(DEF);
+    // writer.printUses(USE);
 
+    /* Task 1 - Finding the Data Flow Graph */
+    generateDataFlowGraph(allInstructions, DEF, USE, PHI_USE, writer);
+
+    /* Task 2 - Identifying the Live-in and Live-out variables for every
+     * instruction */
     int iterationCount = 0;
     bool possibleToUpdate = true;
-    /* NOTE: Please do no change in code in this function upto this point */
-    /* If you change anything, and the output format does not match, your assignment will be penalized.*/
-
+    /* If you change anything in the existing code, and the output format
+     * Does not match, your assignment might be penalized.*/
 
     /*
      * Initially, we assume that dataflow update is possible.
@@ -167,7 +193,8 @@ struct Liveness : public FunctionPass {
      * If you find that no further update is possible,
      * At the beginning of the loop, we set `possibleToUpdate = false`.
      * Inside the dataflow analysis, if you find that update is still possible
-     * Set the variable `possibleToUpdate = true` to keep the data flow loop going.
+     * Set the variable `possibleToUpdate = true` to keep the data flow loop
+     * going.
      */
     while (possibleToUpdate) {
       possibleToUpdate = false;
@@ -183,7 +210,6 @@ struct Liveness : public FunctionPass {
        * Carefully consider the structure of `PHI_USE`, and `PHI_IN` maps.
        * We will provide NO further hint about how to process the PHINode.
        * Please read through the documentation. */
-
     }
     /* Please do not modify the following lines. */
     writer.printLiveIns(IN);
