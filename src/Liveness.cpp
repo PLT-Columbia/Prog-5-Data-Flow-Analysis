@@ -41,26 +41,19 @@ struct Liveness : public FunctionPass {
   }
 
   map<Instruction *, vector<Instruction *>>
-  extractControlFlowGraph(Function &F) {
+  extractControlFlowGraph(vector<Instruction *> &allInstructions) {
     map<Instruction *, vector<Instruction *>> controlFlowGraph;
-    Instruction *preI = nullptr;
-    for (BasicBlock &BB : F) {
-      const Instruction *TInst = BB.getTerminator();
-      for (Instruction &I : BB) {
-        Instruction *pI = &I;
-        if (preI != nullptr) {
-          vector<Instruction *> successors;
-          if (pI == TInst) {
-            for (int i = 0, nSucc = TInst->getNumSuccessors(); i < nSucc; i++) {
-              BasicBlock *succ = TInst->getSuccessor(i);
-              successors.push_back(&succ->front());
-            }
-            controlFlowGraph.insert({pI, successors});
-          }
-          successors.push_back(pI);
-          controlFlowGraph.insert({preI, successors});
+    int nIsnt = allInstructions.size();
+    for (int i = 0; i < nIsnt; i++) {
+      controlFlowGraph[allInstructions[i]] = vector<Instruction *>();
+      if (allInstructions[i]->isTerminator()) {
+        int nSuccessors = allInstructions[i]->getNumSuccessors();
+        for (int j = 0; j < nSuccessors; j++) {
+          auto successor = allInstructions[i]->getSuccessor(j);
+          controlFlowGraph[allInstructions[i]].push_back(&successor->front());
         }
-        preI = pI;
+      } else {
+        controlFlowGraph[allInstructions[i]].push_back(allInstructions[i + 1]);
       }
     }
     return controlFlowGraph;
@@ -160,7 +153,7 @@ struct Liveness : public FunctionPass {
      * For every Instruction in the graph, controlFlowGraph contains a vector
      * Of its neighboring Instruction (only outgoing edges). */
     map<Instruction *, vector<Instruction *>> controlFlowGraph =
-        extractControlFlowGraph(F);
+        extractControlFlowGraph(allInstructions);
 
     map<Instruction *, set<Value *>> USE;
     map<Instruction *, set<Value *>> DEF;
