@@ -165,11 +165,11 @@ struct Liveness : public FunctionPass {
     map<Instruction *, set<Value *>> USE;
     map<Instruction *, set<Value *>> DEF;
     map<PHINode *, map<BasicBlock *, set<Value *>>> PHI_USE;
-    map<Instruction *, set<Value *>> IN;
-    map<Instruction *, set<Value *>> OUT;
+    map<Instruction *, set<Value *>> LIVE_IN;
+    map<Instruction *, set<Value *>> LIVE_OUT;
     map<PHINode *, map<BasicBlock *, set<Value *>>> PHI_IN;
     populateInitialValues(
-        allInstructions, DEF, USE, IN, OUT, PHI_USE, PHI_IN);
+        allInstructions, DEF, USE, LIVE_IN, LIVE_OUT, PHI_USE, PHI_IN);
 
     /* These two printers show the DEFs and USEs of every instruction.
      * You can use these two function to see the values of DEF and USE.
@@ -191,7 +191,7 @@ struct Liveness : public FunctionPass {
      * Initially, we assume that dataflow update is possible.
      * We control the update loop using the variable `possibleToUpdate`.
      * Inside the dataflow analysis, when you want to terminate the updating 
-     * The IN and OUT sets, `possibleToUpdate = false`.
+     * The LIVE_IN and LIVE_OUT sets, `possibleToUpdate = false`.
      */
     while (possibleToUpdate) {
       iterationCount++;
@@ -210,12 +210,12 @@ struct Liveness : public FunctionPass {
       possibleToUpdate = false;
     }
     /* Please do not modify the following lines. */
-    writer.printLiveIns(IN);
-    writer.printLiveOuts(OUT);
+    writer.printLiveIns(LIVE_IN);
+    writer.printLiveOuts(LIVE_OUT);
     writer.printIterationCount(iterationCount);
     return true;
   }
 };
 
 char Liveness::ID = 0;
-static RegisterPass<Liveness> X("liveness", "My Liveness Set Pass");
+static RegisterPass<Liveness> X("liveness", "My Liveness Analysis Pass");
