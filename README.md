@@ -14,103 +14,94 @@ Instructor: Prof. Baishakhi Ray
 * **Total Points:** 100
 
 ## Grading Breakdown
-* Task 1 - Generating Data Flow Graph - 40
-* Task 2 - Liveness analysis - 60 (Live in - 30, Live out - 30)
-* Extra Credit - Minimum number of iteration in liveness analysis - 20
+* **Task 1 (Data Flow Graph Generation)**: 40
+* **Task 2 (Liveness Analysis)**: 60
+* **Extra Credit**: 20
 
 ## Assignment Objectives
 
 From this assignment:
 
-1. You **will learn** how to generate data flow graphs from LLVM IR.
-2. You **will learn** how to analyze the variable liveness from control and data flow graph.
+1. You **will learn** how to generate data flow graphs from the LLVM IR.
+2. You **will learn** how to analyze the liveness of variables from the control and data flow graphs.
 
 ## Assignment
 
-In previous assignments for control flow analysis, you learned how to write a LLVM pass and how to use LLVM pass to
-generate control flow graph with `BasicBlock`s. In this assignment, you will learn about how to do Data Flow Analysis 
-from an LVM IR. More specifically, you will learn about Liveness analysis, which you already studied in the class. 
+In the previous assignment on control flow analysis, you learned how to write an LLVM pass and how to use the pass to generate control flow graphs using `BasicBlock`s. In this assignment, you will learn how to perform *data flow analysis* given an LLVM IR. More specifically, you will learn about liveness analysis, which you already studied in lecture.
 
 
-### Get started
+### Getting Started
 
-1. Convert `example.c` from the `examples` directory to IR:
+1. Convert the `example.c` C program (from the `examples` directory) to an IR by running the following, just as you did in the previous assignment:
 ```
-LLVM_HOME="<the absolute path to llvm-pproject>"
-export PATH="$LLVM_HOME/build/bin:$PATH"
+export LLVM_HOME="<the absolute path to llvm-project>";
+export PATH="$LLVM_HOME/build/bin:$PATH";
 
 clang -O1 -emit-llvm -c example.c
 llvm-dis example.bc
 ```
-You will get `example.bc`, which contains the IR in binary format, and `example.ll`, which contains the IR in human-readable format.
+You will now receive an `example.bc` file, which contains the IR in binary format. You will also see an `example.ll` file, which contains the IR in human-readable format.
 
-2. Read through the `example.ll` and understand what variable each of the instruction Defined (`DEF`) and Used(`USE`).
-Then you can view the CFG of `bubbleSort()` in `bubble.c`. Obviously you can view the CFG of other functions with `dot` 
-command, e.g. `dot -Tpdf .printArray.dot -o printArray.pdf`.
+2. Read through the `example.ll` file, and especially try to understand what variable(s) each instruction "defines" (`DEF`) and "uses" (`USE`). You should also view the CFG of the function `bubbleSort` in `bubble.c`. Similarly, you can view the CFGs of other functions via the `dot` command (*e.g.*, `dot -Tpdf .printArray.dot -o printArray.pdf` for the `printArray` function).
 
-3. Create a new folder `clang-hw5` in `llvm-project/llvm/lib/Transforms` for this assignment, and copy the files:
+3. Create a directory `clang-hw5` in `llvm-project/llvm/lib/Transforms` for this assignment, and copy the files from the `src` directory to this new directory, as follows:
+
 ```
 cp -r ./src/* "$LLVM_HOME/llvm/lib/Transforms/clang-hw5/"
 ```
 
-4. Append `add_subdirectory(clang-hw5)` to `$LLVM_HOME/llvm/lib/Transforms/CMakeLists.txt`.
+4. Append `add_subdirectory(clang-hw5)` to the `$LLVM_HOME/llvm/lib/Transforms/CMakeLists.txt` file.
 
-5. Build `clang-hw5`:
+5. Build `clang-hw5` by running the following commands (you should do this every time you make changes):
+
 ```
 cd "$LLVM_HOME/build"
 make
 ```
-After you successfully run `make` once, you can rebuilt the assignment using `make LLVMliveness`. 
+
+After you successfully run `make` once, you can rebuild the project using `make LLVMliveness`.
+
+In the [`runOnFunction`](src/Liveness.cpp#L156), we have provided you a few important items to help you get started:
+1. An instruction-level CFG representation (using the [`extractControlFlowGraph`](src/Liveness.cpp#L43) function)
+2. An initialization of the `DEF` and `USE` sets for every instruction
+3. An initialization of the `LIVE_IN` and `LIVE_OUT` sets for every instruction
 
 
-In the [`runOnFunction`](src/Liveness.cpp#L156), we have given you a few things,
-1. Instruction Level Control Flow Graph (using [`extractControlFlowGraph` function](src/Liveness.cpp#L43)).
-2. Extracted the `DEF` and the `USE` set for every instruction. 
-3. Initialized the `LIVE_IN` and `LIVE_OUT` set for every instruction.
+### Part 1: Data Flow Graph Generation (40 points)
+In this task, you will generate a data flow graph. You will add your implementation inside the provided [`generateDataFlowGraph`](src/Liveness.cpp#L147) function. A *data flow edge* is defined as an edge from instruction `FROM` to instruction `TO` if a variable (`VALUE`) is "defined" in instruction `FROM` and "used" in Instruction `TO`. When you find such an edge, please use the following code to print out your edge:
 
-
-### Part 1: Generate Data Flow Graph
-Implement the Data Flow Graph Generation inside [`generateDataFlowGraph`](src/Liveness.cpp#L147). A data flow edge is 
-defined as an edge from  Instruction `FROM` to Instruction `TO`, if a Variable (Value) (`VALUE`) is defined in Instruction 
-`FROM` and used in Instruction `TO`. When you file such an edge, you have to call 
 ```C
 writer.printDataFlowEdge(FROM, TO, VALUE);
 ```
-This part of your assignment will be complete when you can successfully identify all the data flow edges. 
 
-You can run the pass you wrote this way:
+You can run the pass you created as follows:
+
 ```
 opt -load $LLVM_HOME/build/lib/LLVMliveness.so -liveness < example.bc
 ```
 
-Compare the edges you found with `example.ll` that you found in Step1.
+As a sanity check, you can compare the edges you found with those in the `example.ll` file that you generated earlier. If you are able to successfully identify all of the data flow edges, Part 1 will be complete.
 
-### Part 2: Liveness Analysis
+### Part 2: Liveness Analysis (60 points)
 
-As you have already learned about the liveness analysis, you are expected to know how to solve the data flow equations 
-for liveness analysis. Since, data flow equations are iterative process, we have provided the skeleton for the [data 
-flow iteration](src/Liveness.cpp#L196). Inside the `while` loop, you have to solve the data flow equation and 
-update the `LIVE_IN` and `LIVE_OUT` sets for every instruction.  The loop is controlled by a boolean variable 
-`possibleToUpdate`. Modify this variable as necessary (_i.e._ set this variable to false, when you determine that
-your analysis converged).
+As you have already learned about liveness analysis, there are data flow equations that you can solve to determine liveness of variables at every node. You will now have the opportunity to solve these data flow equations by implementing the algorithm! Because solving data flow equations is an iterative process, we have provided for you the skeleton code for the [data flow iteration](src/Liveness.cpp#L196). Inside the `while` loop, you will need to solve the data flow equations and update the `LIVE_IN` and `LIVE_OUT` sets after visiting every instruction. The loop is controlled by a Boolean variable called `possibleToUpdate`. Modify this variable as necessary (*i.e.*, set this variable to "false" when you determine that your algorithm has converged).
 
-### Extra Credit
+Here is the grading breakdown for Part 2:
+* **Live-in sets**: 30
+* **Live-out sets**: 30
 
-In the skeleton loop, we are logging the number of iterations needed to converge. You will automatically get 20 points 
-as extra credit, if you can make the analysis converge in `minimum_iterations +- 1`. Note that, we will not provide any
-hint about what is the minimum number of iterations needed. You can easily achieve this extra credit close paying 
-attention to the class lecture and some experiment with this assignment. 
+### Extra Credit (20 points)
 
-### Things to be careful about
-1. Please **DO NOT** remove or modify (except [this line](src/Liveness.cpp#l213)) any of the existing code. 
-2. Put all your necessary code in designated positions. You may write helper function, but please put them inside the 
-[src/Liveness.cpp](src/Liveness.cpp) file. We will just use this file from your submission for grading. 
-3. Read through the steps in this README and TODOs (also other comments) in the code. You will find useful hints 
-if you read carefully.
-4. Pay close attention to the data structures of `DEF`, `USE`, `IN`, `OUT`. 
-5. `PHINode` is a special type of node used in [Single Static Assignment](https://en.wikipedia.org/wiki/Static_single_assignment_form) 
-of variables, which selectively uses a value based on which `BasicBlock it is coming from. 
-Consider the following example.
+In the skeleton loop, we log the number of iterations required for data flow analysis convergence. Let `C` represent the *minimum* number of iterations needed for the algorithm to converge. It is your task to determine what `C` is; your answer may be within 1 iteration of `C`, *i.e.*, you will get full credit if you correctly output `C - 1`, `C`, or `C + 1`. Note that since this is an extra credit task, we will not provide any hints as to what `C` may be. However, if you have been paying close attention to lecture and have experimented a bit already with tasks 1 and 2 of this assignment, you should be able to easily solve this extra credit task.
+
+### Important Notes
+1. Please **DO NOT** remove or modify any of the existing code (except [this line](src/Liveness.cpp#L210)).
+2. Place all of your code in the sections that we have outlined for you. You may include helper functions as necessary, but please make sure to put them inside the [src/Liveness.cpp](src/Liveness.cpp) file. Keep in mind that we will only use this file from your submission for grading. 
+3. Carefully read through the steps highlighted in this README, as well as the TODOs and other comments in the code. You will find useful hints.
+4. Pay close attention to the `DEF`, `USE`, `LIVE_IN`, and `LIVE_OUT` data structures.
+5. `PHINode` is a special type of node used in the [single static assignment](https://en.wikipedia.org/wiki/Static_single_assignment_form) of variables; it selectively chooses a value based on the predecessor `BasicBlock` it comes from.
+
+Consider the following example:
 ```
  1. entry:
  2.   %cmp6 = icmp slt i32 %a, %e
@@ -130,17 +121,15 @@ Consider the following example.
 16.   %res.0.lcssa = phi i32 [ 0, %entry ], [ %add, %while.body ]
 17.   ret i32 %res.0.lcssa
 ```  
-In line 7, while both `%div`, and `%e` seems to be used, only on of them are actually used. If the predecessor 
-`BasicBlock` this instruction (_i.e._ `while.body` BasicBlock) is `while.body`, then `%div` is used, otherwise 
-(when the predecessor is `entry` BasicBlock), `%e` is used. 
-Thus, we extracted all the uses corresponding to the `PHINode` in a special data structure `PHI_USE`. Look closely at the
-data structure, and use it carefully in your code. You may find the following links are useful resources for `PHINode`.
+In line 7, while both `%div` and `%e` appear to both be used, exactly one of them is actually used. If the chosen predecessor `BasicBlock` of this instruction is the `while.body` `BasicBlock`, then `%div` is used. Otherwise, the chosen predecessor `BasicBlock` must be the `entry` `BasicBlock`, and `%e` is used as the value for `%e.addr.08`.
+
+Thus, we extract all the uses corresponding to the `PHINode` in a special data structure called `PHI_USE`. Look closely at this data structure, and use it carefully in your code. You may find the following links are useful resources for `PHINode`:
 
  1. [http://mayuyu.io/2018/06/04/PhiNode-in-LLVM/](http://mayuyu.io/2018/06/04/PhiNode-in-LLVM/)
  2. [https://llvm.org/doxygen/classllvm_1_1PHINode.html](https://llvm.org/doxygen/classllvm_1_1PHINode.html)
 
 ## Submission
-Only one file should be submitted: `src/Liveness.cpp`. Other files will be ignored when grading.  Please make sure that your code is properly committed and pushed to the `main` branch.
+Only one file should be submitted: `src/Liveness.cpp`. Other files will be ignored during grading. Please make sure that your code is properly committed and pushed to the `main` branch.
 
 ## Piazza
 If you have any questions about this programming assignment, please post them in the Piazza forum for the course, and an instructor will reply to them as soon as possible. Any updates to the assignment itself will be available in Piazza.
