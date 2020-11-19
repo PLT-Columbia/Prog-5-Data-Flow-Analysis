@@ -67,7 +67,7 @@ In the [`runOnFunction`](src/Liveness.cpp#L152), we have provided you a few impo
 3. An initialization of the `LIVE_IN` and `LIVE_OUT` sets for every instruction
 
 
-### Part 1: Data Flow Graph Generation (40 points)
+### Task 1: Data Flow Graph Generation (40 points)
 In this task, you will generate a data flow graph. You will add your implementation inside the provided [`generateDataFlowGraph`](src/Liveness.cpp#L143) function. A *data flow edge* is defined as an edge from instruction `FROM` to instruction `TO` if a variable (`VALUE`) is "defined" in instruction `FROM` and "used" in Instruction `TO`. When you find such an edge, please use the following code to print out your edge:
 
 ```C
@@ -80,13 +80,13 @@ You can run the pass you created as follows:
 opt -load $LLVM_HOME/build/lib/LLVMliveness.so -liveness < example.bc
 ```
 
-As a sanity check, you can compare the edges you found with those in the `example.ll` file that you generated earlier. If you are able to successfully identify all of the data flow edges, Part 1 will be complete.
+As a sanity check, you can compare the edges you found with those in the `example.ll` file that you generated earlier. If you are able to successfully identify all of the data flow edges, Task 1 will be complete.
 
-### Part 2: Liveness Analysis (60 points)
+### Task 2: Liveness Analysis (60 points)
 
 As you have already learned about liveness analysis, there are data flow equations that you can solve to determine liveness of variables at every node. You will now have the opportunity to solve these data flow equations by implementing the algorithm! Because solving data flow equations is an iterative process, we have provided for you the skeleton code for the [data flow iteration](src/Liveness.cpp#L193). Inside the `while` loop, you will need to solve the data flow equations and update the `LIVE_IN` and `LIVE_OUT` sets after visiting every instruction. The loop is controlled by a Boolean variable called `possibleToUpdate`. Modify this variable as necessary (*i.e.*, set this variable to "false" when you determine that your algorithm has converged).
 
-Here is the grading breakdown for Part 2:
+Here is the grading breakdown for Task 2:
 * **Live-in sets**: 30
 * **Live-out sets**: 30
 
