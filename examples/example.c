@@ -1,9 +1,9 @@
-int sum(int a, int e){
-	int res = 0;
-	while (a < e){
-		res = res + e;
-		a++;
-		e /= 2;
+int sum(int e){
+    int res = 0;
+    while (res < e){
+        if (res %2 == 0) {
+            res = res + e;
 	}
-	return res;
+    }
+    return res;
 }
