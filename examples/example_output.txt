@@ -1,3 +1,15 @@
+"%cmp7 = icmp sgt i32 %e, 0" --- %cmp7 ---> "br i1 %cmp7, label %while.body, label %while.end"
+"%res.08 = phi i32 [ %spec.select, %while.body ], [ 0, %entry ]" --- %res.08 ---> "%0 = and i32 %res.08, 1"
+"%res.08 = phi i32 [ %spec.select, %while.body ], [ 0, %entry ]" --- %res.08 ---> "%spec.select = add nsw i32 %add, %res.08"
+"%0 = and i32 %res.08, 1" --- %0 ---> "%cmp1 = icmp eq i32 %0, 0"
+"%cmp1 = icmp eq i32 %0, 0" --- %cmp1 ---> "%add = select i1 %cmp1, i32 %e, i32 0"
+"%add = select i1 %cmp1, i32 %e, i32 0" --- %add ---> "%spec.select = add nsw i32 %add, %res.08"
+"%spec.select = add nsw i32 %add, %res.08" --- %spec.select ---> "%res.08 = phi i32 [ %spec.select, %while.body ], [ 0, %entry ]"
+"%spec.select = add nsw i32 %add, %res.08" --- %spec.select ---> "%cmp = icmp slt i32 %spec.select, %e"
+"%spec.select = add nsw i32 %add, %res.08" --- %spec.select ---> "%res.0.lcssa = phi i32 [ 0, %entry ], [ %spec.select, %while.body ]"
+"%cmp = icmp slt i32 %spec.select, %e" --- %cmp ---> "br i1 %cmp, label %while.body, label %while.end, !llvm.loop !2"
+"%res.0.lcssa = phi i32 [ 0, %entry ], [ %spec.select, %while.body ]" --- %res.0.lcssa ---> "ret i32 %res.0.lcssa"
+
 Printing LIVE-IN
 ================================================================
 %cmp7 = icmp sgt i32 %e, 0 
